@@ -68,7 +68,8 @@ class DublinBikes(models.Model):
         blank=True
     )
     position = models.PointField(
-        blank=True
+        blank=True,
+        null=True
     )
 
 
