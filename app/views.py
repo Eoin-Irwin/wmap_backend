@@ -1,6 +1,8 @@
-from django.http import HttpResponse
 import datetime
-from .dublin_bikes_api import json_data_import
+
+from django.http import HttpResponse
+
+from app.dublin_bikes_api import json_data_import
 
 
 def datetime_now(request):
