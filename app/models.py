@@ -6,31 +6,25 @@ from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 
 
-class User(models.Model):
-
-    USERNAME_FIELD = 'name'
-    REQUIRED_FIELDS = ['email']
-
-    user_id = models.IntegerField(
-        verbose_name='user_id',
-        blank=False,
+class UserProfile(models.Model):
+    uid = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name='uid',
         primary_key=True
     )
 
-    name = models.CharField(
+    uname = models.CharField(
         verbose_name='name',
         max_length=80,
-        blank=False,
+        blank=True,
     )
 
     email = models.EmailField(
-        verbose_name='email',
-        max_length=70,
-        blank=True,
-        unique=True)
+        verbose_name='email')
 
     last_location = models.PointField(
-        verbose_name="last known location",
+        verbose_name="last_location",
         blank=True
     )
     created = models.DateTimeField(
@@ -54,12 +48,6 @@ class DublinBikes(models.Model):
         blank=False
     )
 
-    position = models.PointField(
-        max_length=100,
-        verbose_name="position",
-        blank=False
-    )
-
     total_bike_stands = models.IntegerField(
         verbose_name="bike_stands",
         blank=False
@@ -76,13 +64,11 @@ class DublinBikes(models.Model):
     )
 
     last_update = models.DateTimeField(
-        auto_now_add=True
-
+        verbose_name='last_update',
+        blank=True
     )
-    user_id = models.ForeignKey(
-        User,
-        verbose_name='user_id',
-        blank=False
+    position = models.PointField(
+        blank=True
     )
 
 
