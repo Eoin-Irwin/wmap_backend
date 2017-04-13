@@ -11,6 +11,6 @@ def run():
         print(i)
         p = DublinBikes(available_bike_stands=i['available_bike_stands'], available_bikes=i['available_bikes'],
                         total_bike_stands=i['bike_stands'], stand_number=i['number'], stand_name=i['name'],
-                        last_update=i['last_update'], longitude=i['longitude'], latitude=i['latitude'])
+                        last_update=i['last_update'], position=i['position'])
 
         p.save()
