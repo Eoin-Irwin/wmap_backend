@@ -64,14 +64,12 @@ class DublinBikes(models.Model):
     )
 
     last_update = models.DateTimeField(
-        verbose_name='last_update',
         blank=True
     )
-    position = models.PointField(
-        blank=True,
-        null=True
-    )
 
+    longitude = models.FloatField(verbose_name='longitude')
+
+    latitude = models.FloatField(verbose_name='latitude')
 
 # @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 # def create_auth_token(sender, instance=None, created=False, **kwargs):
