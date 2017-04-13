@@ -9,7 +9,10 @@ def json_data_import():
     dub_json_data = r.json()
     for i in dub_json_data:
         i['last_update'] = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        return i
+        i['longitude'] = i['position']['lng']
+        i['latitude'] = i['position']['lat']
+
+    return dub_json_data
 
 
 json_data_import()
