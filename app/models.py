@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from django.db import models
 from django.contrib.gis.db import models
 from django.conf import settings
@@ -64,12 +66,12 @@ class DublinBikes(models.Model):
     )
 
     last_update = models.DateTimeField(
-        blank=True
+        default=timezone.now
     )
 
-    longitude = models.FloatField(verbose_name='longitude')
-
-    latitude = models.FloatField(verbose_name='latitude')
+    position = models.PointField(
+        verbose_name='position',
+        srid=6432)
 
 # @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 # def create_auth_token(sender, instance=None, created=False, **kwargs):
