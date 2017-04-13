@@ -1,0 +1,33 @@
+<!DOCTYPE html>{% load filters %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+
+</head>
+<body>
+{% for pos in data %}
+    <p>{{ pos.position.y }} {{ pos.position.x }}</p>
+{% endfor %}
+
+<div id="map-box">
+    <div id="map" style="height: 500px; "></div>
+</div>
+
+
+</body>
+<script>
+    var map = new L.Map('map').setView([53.3498, -6.2603], 12);
+    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    {% for pos in data %}
+
+        L.marker([{{ pos.position.y }}, {{ pos.position.x }}]).addTo(map)
+            .bindPopup('Place a text for the popup here');
+    {% endfor %}
+</script>
+</html>
