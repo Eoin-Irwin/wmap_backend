@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.template.response import TemplateResponse
 from app.dublin_bikes_api import json_data_import
-from .sql_selects import SELECT_ALL_LOCATIONS
+from .sql_selects import SELECT_ALL_LOCATIONS, SELECT_NAME
 
 
 def view_json_data(request):
@@ -11,4 +11,5 @@ def view_json_data(request):
 
 def landing(request):
     all_locations = SELECT_ALL_LOCATIONS
-    return TemplateResponse(request, 'app/index.html', {"data": all_locations})
+    stand_name = SELECT_NAME
+    return TemplateResponse(request, 'app/index.html', {"data": all_locations, 'stands': stand_name})
