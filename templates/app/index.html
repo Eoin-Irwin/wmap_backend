@@ -24,7 +24,7 @@
     {% for pos in data %}
 
         L.marker([{{ pos.position.y }}, {{ pos.position.x }}]).addTo(map)
-            .bindPopup('pos.stand_name');
+            .bindPopup('{{pos.stand_name}}');
     {% endfor %}
 </script>
 
