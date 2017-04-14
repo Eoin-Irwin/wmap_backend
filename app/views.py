@@ -12,4 +12,4 @@ def view_json_data(request):
 def landing(request):
     all_locations = SELECT_ALL_LOCATIONS
     stand_name = SELECT_NAME
-    return TemplateResponse(request, 'app/index.html', {"data": all_locations, 'stands': stand_name})
+    return TemplateResponse(request, 'app/index.html', {"data": all_locations})
