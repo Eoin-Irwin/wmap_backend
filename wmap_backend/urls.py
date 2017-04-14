@@ -20,7 +20,6 @@ from app import views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^time/', views.datetime_now),
-    url(r'^data/', views.view_json_data)
+    url(r'^land/', views.landing)
 
 ]
