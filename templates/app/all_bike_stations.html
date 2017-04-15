@@ -1,0 +1,39 @@
+<!DOCTYPE html>{% load filters %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bike locations</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+
+</head>
+<body>
+
+<div id="map-box">
+    <div id="map" style="height: 500px; "></div>
+</div>
+
+
+<script>
+
+    var map = new L.map('map').setView([53.3498, -6.2603], 13.5);
+    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    {% for dub_bikes in data %}
+
+        L.marker([{{ dub_bikes.position.y }}, {{ dub_bikes.position.x }}]).addTo(map)
+            .bindPopup("<hr><b>Number: </b>{{dub_bikes.stand_number}} " +
+                "<br><b>Name: </b>{{dub_bikes.stand_name}} " +
+                "<hr><b>Total stands: </b>{{ dub_bikes.total_bike_stands }} " +
+                "<hr><b>Free stands: </b> {{ dub_bikes.available_bike_stands }} " +
+                "<br><b>Free bikes: </b>{{ dub_bikes.available_bikes }}  " +
+                "<hr><b>Updated: </b>{{ dub_bikes.last_update }} <hr>");
+    {% endfor %}
+</script>
+
+
+</body>
+
+</html>
