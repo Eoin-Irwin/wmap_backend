@@ -5,7 +5,8 @@
     <title>Bike locations</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
 
@@ -14,9 +15,9 @@
     <link rel="stylesheet" href="/static/css/materialize.css"/>
     <link rel="stylesheet" href="/static/css/style.css"/>
 </head>
-<body>
+<body onload="pos()">
 <nav class="light-blue lighten-1" role="navigation">
-    <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">Dublin bike finder</a>
+    <div class="nav-wrapper container"><a id="logo-container" href="/" class="brand-logo">Dublin bike finder</a>
         <ul class="right hide-on-med-and-down">
             <li><a href="#">Hello</a></li>
         </ul>
@@ -33,30 +34,45 @@
         <div id="map-box">
             <div id="map" style="height: 500px; "></div>
         </div>
-
-
         <script>
 
-            var map = new L.map('map').setView([53.3498, -6.2603], 13.5);
-            L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
+            function pos() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(showPosition);
+                } else {
+                    alert("Geolocation is not supported by this browser.");
+                }
+            }
+            function showPosition(position) {
 
-            {% for dub_bikes in data %}
+                var map = new L.map('map').setView([position.coords.latitude, position.coords.longitude], 13.5);
+                L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
 
-                L.marker([{{ dub_bikes.position.y }}, {{ dub_bikes.position.x }}]).addTo(map)
-                    .bindPopup("<hr><b>Number: </b>{{dub_bikes.stand_number}} " +
-                        "<br><b>Name: </b>{{dub_bikes.stand_name}} " +
-                        "<hr><b>Total stands: </b>{{ dub_bikes.total_bike_stands }} " +
-                        "<hr><b>Free stands: </b> {{ dub_bikes.available_bike_stands }} " +
-                        "<br><b>Free bikes: </b>{{ dub_bikes.available_bikes }}  " +
-                        "<hr><b>Updated: </b>{{ dub_bikes.last_update }} <hr>");
-            {% endfor %}
+                L.marker([position.coords.latitude, position.coords.longitude], {
+                    icon: L.AwesomeMarkers.icon({
+                        prefix: 'fa',
+                        markerColor: 'red'
+                    })
+                }).addTo(map)
+                    .bindPopup("<b>Your location: </b>" + position.coords.latitude +" "+ position.coords.longitude);
+
+                {% for dub_bikes in data %}
+
+                    L.marker([{{ dub_bikes.position.y }}, {{ dub_bikes.position.x }}]).addTo(map)
+                        .bindPopup("<hr><b>Number: </b>{{dub_bikes.stand_number}} " +
+                            "<br><b>Name: </b>{{dub_bikes.stand_name}} " +
+                            "<hr><b>Total stands: </b>{{ dub_bikes.total_bike_stands }} " +
+                            "<hr><b>Free stands: </b> {{ dub_bikes.available_bike_stands }} " +
+                            "<br><b>Free bikes: </b>{{ dub_bikes.available_bikes }}  " +
+                            "<hr><b>Updated: </b>{{ dub_bikes.last_update }} <hr>");
+                {% endfor %}
+            }
         </script>
     </div>
     <br><br>
 
-</div>
 </div>
 
 
