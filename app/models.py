@@ -1,3 +1,5 @@
+import datetime
+
 from django.utils import timezone
 
 from django.db import models
@@ -66,7 +68,7 @@ class DublinBikes(models.Model):
     )
 
     last_update = models.DateTimeField(
-        default=timezone.now
+        default=datetime.datetime.now()
     )
 
     position = models.PointField(
