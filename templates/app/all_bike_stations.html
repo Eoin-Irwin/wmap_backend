@@ -57,7 +57,12 @@
                     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                 }).addTo(map);
 
-                L.Routing.control({waypoints: [L.latLng(position.coords.latitude, position.coords.longitude), L.latLng(53.336074, -6.252825)]}).addTo(map);
+                L.Routing.control({
+                        waypoints: [L.latLng(position.coords.latitude, position.coords.longitude),
+                            L.latLng(53.336074, -6.252825)]
+                        , lineOptions: {addWaypoints: false}
+                    }
+                ).addTo(map);
 
                 L.marker([position.coords.latitude, position.coords.longitude], {
                     icon: L.AwesomeMarkers.icon({
@@ -75,8 +80,22 @@
                             "<hr><b>Free stands: </b> {{ dub_bikes.available_bike_stands }} " +
                             "<br><b>Free bikes: </b>{{ dub_bikes.available_bikes }}  " +
                             "<hr><b>Updated: </b>{{ dub_bikes.last_update }} <hr>" +
-                            "<b>Position: </b>{{ dub_bikes.position.y }} {{ dub_bikes.position.x }}<hr>");
+                            "<b>Position: </b>{{ dub_bikes.position.y }} {{ dub_bikes.position.x }}<hr>" +
+                            "<br><br><button class='btn btn-primary' onclick=route_to_station({{ dub_bikes.position.y }},{{ dub_bikes.position.x }})>Route to here</button>  ");
                 {% endfor %}
+
+                $('.leaflet-container').css('cursor', 'move');
+            }
+
+            function route_to_station(x, y) {
+                alert('Station ' + x + ',' + y);
+                L.Routing.control({
+                    createMarker: function () {
+                        return null;
+                    }
+                });
+                L.Routing.control({waypoints: [L.latLng(position.coords.latitude, position.coords.longitude), L.latLng(x, y)]}).addTo(map);
+
             }
         </script>
     </div>
