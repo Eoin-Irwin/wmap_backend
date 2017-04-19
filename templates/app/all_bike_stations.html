@@ -42,6 +42,8 @@
             <div id="map" style="height: 500px; "></div>
         </div>
         <script>
+            //Accessible map
+            var map = '';
 
             function pos() {
                 if (navigator.geolocation) {
@@ -51,28 +53,23 @@
                 }
             }
             function showPosition(position) {
-
-                var map = L.map('map').setView([position.coords.latitude, position.coords.longitude], 14);
+                //Set the map view to be the users location
+                //
+                map = L.map('map').setView([position.coords.latitude, position.coords.longitude], 14);
                 L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
                     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                 }).addTo(map);
 
-                L.Routing.control({
-                        waypoints: [L.latLng(position.coords.latitude, position.coords.longitude),
-                            L.latLng(53.336074, -6.252825)]
-                        , lineOptions: {addWaypoints: false}
-                    }
-                ).addTo(map);
-
+                //Change the users marker to a unique red & show users location on click
+                //
                 L.marker([position.coords.latitude, position.coords.longitude], {
-                    icon: L.AwesomeMarkers.icon({
-                        prefix: 'fa',
-                        markerColor: 'red'
-                    })
+                    icon: L.AwesomeMarkers.icon({prefix: 'fa', markerColor: 'red'})
                 }).addTo(map).bindPopup("<b>Your location: </b>" + position.coords.latitude + "," + position.coords.longitude);
 
-                {% for dub_bikes in data %}
 
+                //Loop through all of the Dublin bike data and assign them onClick of a marker
+                //
+                {% for dub_bikes in data %}
                     L.marker([{{ dub_bikes.position.y }}, {{ dub_bikes.position.x }}]).addTo(map)
                         .bindPopup("<hr><b>Number: </b>{{dub_bikes.stand_number}} " +
                             "<br><b>Name: </b>{{dub_bikes.stand_name}} " +
@@ -81,20 +78,23 @@
                             "<br><b>Free bikes: </b>{{ dub_bikes.available_bikes }}  " +
                             "<hr><b>Updated: </b>{{ dub_bikes.last_update }} <hr>" +
                             "<b>Position: </b>{{ dub_bikes.position.y }} {{ dub_bikes.position.x }}<hr>" +
-                            "<br><br><button class='btn btn-primary' onclick=route_to_station({{ dub_bikes.position.y }},{{ dub_bikes.position.x }})>Route to here</button>  ");
+                            "<br><button class='btn btn-primary' onclick=route_to_station(" + position.coords.latitude + "," + position.coords.longitude + ",{{ dub_bikes.position.y }},{{ dub_bikes.position.x }})>Route to here</button>");
                 {% endfor %}
 
+                //Change cursor to a move instead of hand grab
+                //
                 $('.leaflet-container').css('cursor', 'move');
+
             }
 
-            function route_to_station(x, y) {
-                alert('Station ' + x + ',' + y);
+            function route_to_station(users_lat_coords, users_lng_coords, x, y) {
+                //Set routing to go from the users location to the chosen location
+                //
                 L.Routing.control({
-                    createMarker: function () {
-                        return null;
+                        waypoints: [L.latLng(users_lat_coords, users_lng_coords), L.latLng(x, y)],
+                        lineOptions: {addWaypoints: false}
                     }
-                });
-                L.Routing.control({waypoints: [L.latLng(position.coords.latitude, position.coords.longitude), L.latLng(x, y)]}).addTo(map);
+                ).addTo(map);
 
             }
         </script>
