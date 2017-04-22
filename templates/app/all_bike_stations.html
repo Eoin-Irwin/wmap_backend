@@ -44,6 +44,7 @@
         <script>
             //Accessible map
             var map = '';
+            var users_lat_coords, users_lng_coords, x, y = '';
 
             function pos() {
                 if (navigator.geolocation) {
@@ -85,17 +86,26 @@
                 //
                 $('.leaflet-container').css('cursor', 'move');
 
+                if (x !== '') {
+                    L.Routing.control({
+                            waypoints: [L.latLng(users_lat_coords, users_lng_coords), L.latLng(x, y)],
+                            lineOptions: {addWaypoints: false}
+                        }
+                    ).addTo(map);
+                }
+
             }
 
-            function route_to_station(users_lat_coords, users_lng_coords, x, y) {
+            function route_to_station(users_lat_coords1, users_lng_coords1, x1, y1) {
+                users_lat_coords = users_lat_coords1;
+                users_lng_coords = users_lng_coords1;
+                x = x1;
+                y = y1;
                 //Set routing to go from the users location to the chosen location
                 //
-                L.Routing.control({
-                        waypoints: [L.latLng(users_lat_coords, users_lng_coords), L.latLng(x, y)],
-                        lineOptions: {addWaypoints: false}
-                    }
-                ).addTo(map);
-
+                $("#map-box").html("");
+                $("#map-box").html('<div id="map" style ="height: 500px; "></div>');
+                pos();
             }
         </script>
     </div>
@@ -160,8 +170,8 @@
                 <h5 class="white-text">Links</h5>
                 <ul>
                     <li><a class="white-text" href="/">Home</a></li>
-                    <li><a class="white-text" href="/land">All stations</a></li>
-                    <li><a class="white-text" href="#!">Nearby Station</a></li>
+                    <li><a class="white-text" href="/all_stations">All stations</a></li>
+                    <li><a class="white-text" href="/nearby_station">Nearby Station</a></li>
                     <li><a class="white-text" href="http://www.dublinbikes.ie" target="_blank">Dublin Bikes (official
                         site)</a></li>
                 </ul>
@@ -189,6 +199,24 @@
 <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
 <script src="/static/js/materialize.js"></script>
 <script src="/static/js/init.js"></script>
+<style>
+    .loader {
+        border: 16px solid #f3f3f3; /* Light grey */
+        border-top: 16px solid #3498db; /* Blue */
+        border-radius: 50%;
+        width: 120px;
+        height: 120px;
+        animation: spin 2s linear infinite;
+    }
 
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
 </body>
 </html>
