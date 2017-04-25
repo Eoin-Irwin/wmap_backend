@@ -43,6 +43,8 @@
         </div>
         <script>
             //Accessible map
+            var been_routed = false;
+            var routing = '';
             var map = '';
             var users_lat_coords, users_lng_coords, x, y = '';
 
@@ -86,13 +88,6 @@
                 //
                 $('.leaflet-container').css('cursor', 'move');
 
-                if (x !== '') {
-                    L.Routing.control({
-                            waypoints: [L.latLng(users_lat_coords, users_lng_coords), L.latLng(x, y)],
-                            lineOptions: {addWaypoints: false}
-                        }
-                    ).addTo(map);
-                }
 
             }
 
@@ -101,12 +96,34 @@
                 users_lng_coords = users_lng_coords1;
                 x = x1;
                 y = y1;
+
+
+                if (x !== '') {
+                     if (been_routed == true) {
+                         routing.spliceWaypoints(0,1);
+                     }
+                    routing = L.Routing.control({
+                            waypoints: [L.latLng(users_lat_coords, users_lng_coords), L.latLng(x, y)],
+                            lineOptions: {addWaypoints: false}
+                        }
+
+                    );
+
+                    routing.addTo(map);
+
+
+                    been_routed = true;
+
+                }
+
+
                 //Set routing to go from the users location to the chosen location
                 //
-                $("#map-box").html("");
-                $("#map-box").html('<div id="map" style ="height: 500px; "></div>');
-                pos();
+                {#                $("#map-box").html("");#}
+                {#                $("#map-box").html('<div id="map" style ="height: 500px; "></div>');#}
+
             }
+
         </script>
     </div>
     <br><br>
