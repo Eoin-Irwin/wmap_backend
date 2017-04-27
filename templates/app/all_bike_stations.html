@@ -77,7 +77,7 @@
                         .bindPopup("<hr><b>Number: </b>{{dub_bikes.stand_number}} " +
                             "<br><b>Name: </b>{{dub_bikes.stand_name}} " +
                             "<hr><b>Total stands: </b>{{ dub_bikes.total_bike_stands }} " +
-                            "<hr><b>Free stands: </b> {{ dub_bikes.available_bike_stands }} " +
+                            "<hr><b>Empty stands: </b> {{ dub_bikes.available_bike_stands }} " +
                             "<br><b>Free bikes: </b>{{ dub_bikes.available_bikes }}  " +
                             "<hr><b>Updated: </b>{{ dub_bikes.last_update }} <hr>" +
                             "<b>Position: </b>{{ dub_bikes.position.y }} {{ dub_bikes.position.x }}<hr>" +
@@ -98,7 +98,7 @@
                 y = y1;
 
                 if (x !== '') {
-                    if (been_routed == true) {
+                    if (been_routed === true) {
                         routing.spliceWaypoints(0, 1);
                     }
                     routing = L.Routing.control({
@@ -109,6 +109,11 @@
                     );
                     routing.addTo(map);
                     been_routed = true;
+                    var listofroutes = document.getElementsByClassName('leaflet-routing-container leaflet-bar leaflet-control')
+                    if (listofroutes.length >1){
+                        listofroutes[0].remove();
+                    }
+
 
                 }
             }
