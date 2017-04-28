@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="/static/routing/leaflet-routing-machine.css"/>
     <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
     <script src="/static/routing/leaflet-routing-machine.js"></script>
+        <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.2/pure-min.css"/>
 
     <!-- Map  -->
     <script src="https://cdn.jsdelivr.net/leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.min.js"></script>
@@ -41,25 +42,56 @@
         <div id="map-box">
             <div id="map" style="height: 500px; "></div>
         </div>
+        <table class="pure-table pure-table-bordered">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Make</th>
+            <th>Model</th>
+            <th>Year</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td>1</td>
+            <td>Honda</td>
+            <td>Accord</td>
+            <td>2009</td>
+        </tr>
+
+        <tr>
+            <td>2</td>
+            <td>Toyota</td>
+            <td>Camry</td>
+            <td>2012</td>
+        </tr>
+
+        <tr>
+            <td>3</td>
+            <td>Hyundai</td>
+            <td>Elantra</td>
+            <td>2010</td>
+        </tr>
+    </tbody>
+</table>
         <table id="tab" style="float: left;">
 
             <thead>
             <tr>
-                <th colspan="3">Dublin Bikes</th>
+                <th>#</th>
+                <th>Stand Name</th>
+                <th>Distance</th>
+                <th>Free Bikes</th>
             </tr>
             <tr>
                 <th colspan="2"></th>
             </tr>
             </thead>
-            <tbody>
-            {% for dub_bikes in data %}
-                <tr>
-                    <td>{{ dub_bikes.stand_number }}</td>
-                    <td>{{ dub_bikes.stand_name }}</td>
-                <td>Distance to user</td>
-                </tr>
-                </tbody>
-            {% endfor %}
+            <tbody id="tbody">
+
+            </tbody>
+
         </table>
         <script>
             //Accessible map
@@ -92,23 +124,53 @@
 
                 //Loop through all of the Dublin bike data and assign them onClick of a marker
                 //
-                {% for dub_bikes in data %}
-                    L.marker([{{ dub_bikes.position.y }}, {{ dub_bikes.position.x }}]).addTo(map)
-                        .bindPopup("<hr><b>Number: </b>{{dub_bikes.stand_number}} " +
-                            "<br><b>Name: </b>{{dub_bikes.stand_name}} " +
-                            "<hr><b>Total stands: </b>{{ dub_bikes.total_bike_stands }} " +
-                            "<hr><b>Empty stands: </b> {{ dub_bikes.available_bike_stands }} " +
-                            "<br><b>Free bikes: </b>{{ dub_bikes.available_bikes }}  " +
-                            "<hr><b>Updated: </b>{{ dub_bikes.last_update }} <hr>" +
-                            "<b>Position: </b>{{ dub_bikes.position.y }} {{ dub_bikes.position.x }}<hr>" +
-                            "<br><button class='btn btn-primary' onclick=route_to_station(" + position.coords.latitude + "," + position.coords.longitude + ",{{ dub_bikes.position.y }},{{ dub_bikes.position.x }})>Route to here</button>");
-                {% endfor %}
+
+                $.ajax({
+                    method: 'GET',
+                    url: "/json_all_stations/",
+                    data: {'lat': position.coords.latitude, 'long': position.coords.longitude},
+                    success: function (bike_data) {
+                        for (var i in bike_data['0']) {
+                            a = bike_data;
+                            coords = a['0'][i]['fields']['position'];
+                            var regExp = /\(([^)]+)\)/;
+                            var matches = regExp.exec(coords);
+
+                            //matches[1] contains the value between the parentheses
+                            splitting = matches[1].split(" ");
+                            lng = splitting[0];
+                            lat = splitting[1];
+
+                            var tbody = document.getElementById("tbody");
+                            tbody.innerHTML += "<tr class = 'trdist'><td>" + a['0'][i]['pk'] + "</td><td>" + a['0'][i]['fields']['stand_name'] + "</td><td class ='dist' data-dist="+a['0'][i]['distance']+">" + a['0'][i]['distance'] + "</td><td>" + a['0'][i]['fields']['available_bikes'] + "</td></tr>";
+
+                            $('.trdist').sort(function (a, b) {
+                                return $(a).find('.dist').data('dist') - $(b).find('.dist').data('dist');
+                            }).each(function (_, trdist) {
+                                $(trdist).parent().append(trdist);
+                            });
+
+                            L.marker([lat, lng]).addTo(map).bindPopup("<hr><b>Number: </b>" + a['0'][i]['pk'] + "<br><b>Name: </b>" + a['0'][i]['fields']['stand_name'] +
+                                "<hr><b>Free bikes: </b> " + a['0'][i]['fields']['available_bikes'] + "<br><b>Total stands: </b>" + a['0'][i]['fields']['total_bike_stands'] +
+                                "<hr><b>Free stands: </b> " + a['0'][i]['fields']['available_bike_stands'] + "<hr><b>Updated: </b>" + a['0'][i]['fields']['last_update'] +
+                                "<hr><b>Position: </b>" + lat + "," + lng +
+                                "<hr><b>Distance: </b>" + a['0'][i]['distance'] + "<hr>"
+                                + "<br><button class='btn btn-primary' onclick=\"route_to_station(" + position.coords.latitude + "," + position.coords.longitude + "," + lat + "," + lng + ")\">Route to here</button>");
+                        }
+
+                        if (x !== '') {
+                            L.Routing.control({
+                                    waypoints: [L.latLng(users_lat_coords, users_lng_coords), L.latLng(x, y)],
+                                    lineOptions: {addWaypoints: false}
+                                }
+                            ).addTo(map);
+                        }
+                    }
+                });
 
                 //Change cursor to a move instead of hand grab
                 //
                 $('.leaflet-container').css('cursor', 'move');
-
-
             }
 
             function route_to_station(users_lat_coords1, users_lng_coords1, x1, y1) {
@@ -122,11 +184,9 @@
                         routing.spliceWaypoints(0, 1);
                     }
                     routing = L.Routing.control({
-                            waypoints: [L.latLng(users_lat_coords, users_lng_coords), L.latLng(x, y)],
-                            lineOptions: {addWaypoints: false}
-
-                        }
-                    );
+                        waypoints: [L.latLng(users_lat_coords, users_lng_coords), L.latLng(x, y)],
+                        lineOptions: {addWaypoints: false}
+                    });
                     routing.addTo(map);
                     been_routed = true;
                     var listofroutes = document.getElementsByClassName('leaflet-routing-container leaflet-bar leaflet-control');
@@ -135,192 +195,191 @@
                     }
 
 
-
                 }
             }
         </script>
     </div>
     <br><br>
 
-</div>
 
-
-<div class="container">
-    <div class="section">
-
-        <!--   Icon Section   -->
-        <div class="row">
-            <div class="col s12 m4">
-                <div class="icon-block">
-                    <h2 class="center light-blue-text"><i class="material-icons">wifi</i></h2>
-                    <h5 class="center">Find a nearby bike</h5>
-
-                </div>
-                <p class="light">You will be able to see any bikes within a close distance or search for any of the 101
-                    nearby stations.</p>
-            </div>
-
-            <div class="col s12 m4">
-                <div class="icon-block">
-                    <h2 class="center light-blue-text"><i class="material-icons">room</i></h2>
-                    <h5 class="center">Get directions</h5>
-
-                    <p class="light">Get directions for your chosen bike station.</p>
-                </div>
-            </div>
-
-            <div class="col s12 m4">
-                <div class="icon-block">
-                    <h2 class="center light-blue-text"><i class="material-icons">search</i></h2>
-                    <h5 class="center">Locate the station</h5>
-
-                    <p class="light">Walk or cycle to your bike station to either get a bike or drop one off.</p>
-                </div>
-            </div>
-        </div>
-
-    </div>
-    <br><br>
-
-    <div class="section">
-
-    </div>
-</div>
-
-<footer class="page-footer orange">
     <div class="container">
-        <div class="row">
-            <div class="col l6 s12">
-                <h5 class="white-text">Dublin Bike Finder</h5>
+        <div class="section">
 
-                <p class="grey-text text-lighten-4">If you want to find a Dublin bike, or looking for a free station to
-                    drop your bike back. This app will help.</p>
+            <!--   Icon Section   -->
+            <div class="row">
+                <div class="col s12 m4">
+                    <div class="icon-block">
+                        <h2 class="center light-blue-text"><i class="material-icons">wifi</i></h2>
+                        <h5 class="center">Find a nearby bike</h5>
 
+                    </div>
+                    <p class="light">You will be able to see any bikes within a close distance or search for any of the
+                        101
+                        nearby stations.</p>
+                </div>
+
+                <div class="col s12 m4">
+                    <div class="icon-block">
+                        <h2 class="center light-blue-text"><i class="material-icons">room</i></h2>
+                        <h5 class="center">Get directions</h5>
+
+                        <p class="light">Get directions for your chosen bike station.</p>
+                    </div>
+                </div>
+
+                <div class="col s12 m4">
+                    <div class="icon-block">
+                        <h2 class="center light-blue-text"><i class="material-icons">search</i></h2>
+                        <h5 class="center">Locate the station</h5>
+
+                        <p class="light">Walk or cycle to your bike station to either get a bike or drop one off.</p>
+                    </div>
+                </div>
             </div>
-            <div class="col l3 s12">
-                <h5 class="white-text">Links</h5>
-                <ul>
-                    <li><a class="white-text" href="/">Home</a></li>
-                    <li><a class="white-text" href="/all_stations">All stations</a></li>
-                    <li><a class="white-text" href="/nearby_station">Nearby Station</a></li>
-                    <li><a class="white-text" href="http://www.dublinbikes.ie" target="_blank">Dublin Bikes (official
-                        site)</a></li>
-                </ul>
-            </div>
-            <div class="col l3 s12">
-                <h5 class="white-text"></h5>
-                <ul>
-                    <li><a class="white-text" href="#!"></a></li>
-                    <li><a class="white-text" href="#!"></a></li>
-                    <li><a class="white-text" href="#!"></a></li>
-                    <li><a class="white-text" href="#!"></a></li>
-                </ul>
+
+            <br><br>
+
+            <div class="section">
+
             </div>
         </div>
-    </div>
-    <div class="footer-copyright">
-        <div class="container">
-            Made by <a class="orange-text text-lighten-3">Eoin Irwin</a>
-        </div>
-    </div>
-</footer>
+
+        <footer class="page-footer orange">
+            <div class="container">
+                <div class="row">
+                    <div class="col l6 s12">
+                        <h5 class="white-text">Dublin Bike Finder</h5>
+
+                        <p class="grey-text text-lighten-4">If you want to find a Dublin bike, or looking for a free
+                            station to
+                            drop your bike back. This app will help.</p>
+
+                    </div>
+                    <div class="col l3 s12">
+                        <h5 class="white-text">Links</h5>
+                        <ul>
+                            <li><a class="white-text" href="/">Home</a></li>
+                            <li><a class="white-text" href="/all_stations">All stations</a></li>
+                            <li><a class="white-text" href="/nearby_station">Nearby Station</a></li>
+                            <li><a class="white-text" href="http://www.dublinbikes.ie" target="_blank">Dublin Bikes
+                                (official
+                                site)</a></li>
+                        </ul>
+                    </div>
+                    <div class="col l3 s12">
+                        <h5 class="white-text"></h5>
+                        <ul>
+                            <li><a class="white-text" href="#!"></a></li>
+                            <li><a class="white-text" href="#!"></a></li>
+                            <li><a class="white-text" href="#!"></a></li>
+                            <li><a class="white-text" href="#!"></a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-copyright">
+                <div class="container">
+                    Made by <a class="orange-text text-lighten-3">Eoin Irwin</a>
+                </div>
+            </div>
+        </footer>
 
 
-<!--  Scripts-->
-<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-<script src="/static/js/materialize.js"></script>
-<script src="/static/js/init.js"></script>
-<style>
-    .loader {
-        border: 16px solid #f3f3f3; /* Light grey */
-        border-top: 16px solid #3498db; /* Blue */
-        border-radius: 50%;
-        width: 120px;
-        height: 120px;
-        animation: spin 2s linear infinite;
-    }
+        <!--  Scripts-->
+        <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="/static/js/materialize.js"></script>
+        <script src="/static/js/init.js"></script>
+        <style>
+            .loader {
+                border: 16px solid #f3f3f3; /* Light grey */
+                border-top: 16px solid #3498db; /* Blue */
+                border-radius: 50%;
+                width: 120px;
+                height: 120px;
+                animation: spin 2s linear infinite;
+            }
 
-    @keyframes spin {
-        0% {
-            transform: rotate(0deg);
-        }
-        100% {
-            transform: rotate(360deg);
-        }
-    }
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
 
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
 
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        color: #333;
-    }
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                color: #333;
+            }
 
-    #tab {
-        text-align: left;
-        line-height: 40px;
-        border-collapse: separate;
-        border-spacing: 0;
-        border: 2px solid #29b6f6;
-        width: 500px;
-        margin: 50px auto;
-        border-radius: .25rem;
+            #tab {
+                text-align: left;
+                line-height: 40px;
+                border-collapse: separate;
+                border-spacing: 0;
+                border: 2px solid #29b6f6;
+                width: 500px;
+                margin: 50px auto;
+                border-radius: .25rem;
 
-        overflow-y: scroll;
-        height: 400px;
-        display: block;
-    }
+                overflow-y: scroll;
+                height: 400px;
+                display: block;
+            }
 
-    thead tr:first-child {
-        background: #29b6f6;
-        color: #fff;
-        border: none;
-    }
+            thead tr:first-child {
+                background: #29b6f6;
+                color: #fff;
+                border: none;
+            }
 
-    th:first-child,
-    td:first-child {
-        padding: 0 15px 0 20px;
-    }
+            th:first-child,
+            td:first-child {
+                padding: 0 15px 0 20px;
+            }
 
-    thead tr:last-child th {
-        border-bottom: 3px solid #ddd;
-    }
+            thead tr:last-child th {
+                border-bottom: 3px solid #ddd;
+            }
 
-    tbody tr:hover {
-        background-color: rgba(237, 28, 64, .1);
-        cursor: default;
-    }
+            tbody tr:hover {
+                background-color: rgba(237, 28, 64, .1);
+                cursor: default;
+            }
 
-    tbody tr:last-child td {
-        border: none;
-    }
+            tbody tr:last-child td {
+                border: none;
+            }
 
-    tbody td {
-        border-bottom: 1px solid #ddd;
-    }
+            tbody td {
+                border-bottom: 1px solid #ddd;
+            }
 
-    td:last-child {
-        text-align: right;
-        padding-right: 10px;
-    }
+            td:last-child {
+                text-align: right;
+                padding-right: 10px;
+            }
 
-    .button {
-        color: #aaa;
-        cursor: pointer;
-        vertical-align: middle;
-    }
+            .button {
+                color: #aaa;
+                cursor: pointer;
+                vertical-align: middle;
+            }
 
-    .edit:hover {
-        color: #0a79df;
-    }
+            .edit:hover {
+                color: #0a79df;
+            }
 
-    .delete:hover {
-        color: #dc2a2a;
-    }
-</style>
+            .delete:hover {
+                color: #dc2a2a;
+            }
+        </style>
 </body>
 </html>
