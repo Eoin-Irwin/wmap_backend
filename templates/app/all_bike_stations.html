@@ -41,6 +41,26 @@
         <div id="map-box">
             <div id="map" style="height: 500px; "></div>
         </div>
+        <table id="tab" style="float: left;">
+
+            <thead>
+            <tr>
+                <th colspan="3">Dublin Bikes</th>
+            </tr>
+            <tr>
+                <th colspan="2"></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for dub_bikes in data %}
+                <tr>
+                    <td>{{ dub_bikes.stand_number }}</td>
+                    <td>{{ dub_bikes.stand_name }}</td>
+                <td>Distance to user</td>
+                </tr>
+                </tbody>
+            {% endfor %}
+        </table>
         <script>
             //Accessible map
             var been_routed = false;
@@ -104,15 +124,16 @@
                     routing = L.Routing.control({
                             waypoints: [L.latLng(users_lat_coords, users_lng_coords), L.latLng(x, y)],
                             lineOptions: {addWaypoints: false}
-                        }
 
+                        }
                     );
                     routing.addTo(map);
                     been_routed = true;
-                    var listofroutes = document.getElementsByClassName('leaflet-routing-container leaflet-bar leaflet-control')
-                    if (listofroutes.length >1){
+                    var listofroutes = document.getElementsByClassName('leaflet-routing-container leaflet-bar leaflet-control');
+                    if (listofroutes.length > 1) {
                         listofroutes[0].remove();
                     }
+
 
 
                 }
@@ -226,6 +247,79 @@
         100% {
             transform: rotate(360deg);
         }
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        color: #333;
+    }
+
+    #tab {
+        text-align: left;
+        line-height: 40px;
+        border-collapse: separate;
+        border-spacing: 0;
+        border: 2px solid #29b6f6;
+        width: 500px;
+        margin: 50px auto;
+        border-radius: .25rem;
+
+        overflow-y: scroll;
+        height: 400px;
+        display: block;
+    }
+
+    thead tr:first-child {
+        background: #29b6f6;
+        color: #fff;
+        border: none;
+    }
+
+    th:first-child,
+    td:first-child {
+        padding: 0 15px 0 20px;
+    }
+
+    thead tr:last-child th {
+        border-bottom: 3px solid #ddd;
+    }
+
+    tbody tr:hover {
+        background-color: rgba(237, 28, 64, .1);
+        cursor: default;
+    }
+
+    tbody tr:last-child td {
+        border: none;
+    }
+
+    tbody td {
+        border-bottom: 1px solid #ddd;
+    }
+
+    td:last-child {
+        text-align: right;
+        padding-right: 10px;
+    }
+
+    .button {
+        color: #aaa;
+        cursor: pointer;
+        vertical-align: middle;
+    }
+
+    .edit:hover {
+        color: #0a79df;
+    }
+
+    .delete:hover {
+        color: #dc2a2a;
     }
 </style>
 </body>
