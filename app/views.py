@@ -1,12 +1,11 @@
-import json
+import json, re
 from django.core import serializers
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.template.response import TemplateResponse
 from app.distance_of_points import distance_checker
 from app.dublin_bikes_api import json_data_import
 from app.models import DublinBikes
 from .sql_selects import SELECT_ALL_DATA_VALUES
-import re
 
 
 def json_all_stations(request):
@@ -28,8 +27,8 @@ def json_all_stations(request):
         res = re.findall(regex, coords)
         blong, blat = res[0].split(' ')
         dist = distance_checker(lat, long, blat, blong)
-        i['distance'] = dist
-    return JsonResponse(results)  # return it
+        i['distance'] = float(dist) / 1000
+    return JsonResponse(results)
 
 
 def index(request):
@@ -43,13 +42,4 @@ def all_stations(request):
             available_bike_stands=i['available_bike_stands'], available_bikes=i['available_bikes'],
             last_update=i['last_update'])
     all_data = SELECT_ALL_DATA_VALUES
-
     return TemplateResponse(request, 'app/all_bike_stations.html', {"data": all_data})
-
-# def nearby(json_data):
-#     # get posted data
-#     submitted = json_data
-#     # do whatever is necessary to create document
-#     data = submitted
-#     check_dis = distance_checker(lat=,long=,check_lat=data[0]['position'].y,check_long=data[0]['position'].x)
-#     return TemplateResponse(check_dis, 'app/all_bike_stations.html')
