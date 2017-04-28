@@ -12,12 +12,15 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 
 import os
 
+os.environ['DJANGO_SETTINGS_MODULE'] = 'wmap_backend.settings'
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
-
+SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
+STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'ar8-!$mjd027k+jb-d!%g-$6havoj-x)!7&$-kv_*(es=5v47n'
 
@@ -36,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'app',
-    'django.contrib.sites'
+    'django.contrib.sites',
+    'leaflet'
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -75,6 +79,16 @@ WSGI_APPLICATION = 'wmap_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'wmap',
+        'USER': 'postgres',
+        'PASSWORD': 'winning',
+        'HOST': '46.101.134.173',
+        'PORT': '5432',
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
@@ -112,9 +126,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-]
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_ROOT = os.path.join(PROJECT_DIR, 'static')
 
