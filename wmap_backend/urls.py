@@ -22,7 +22,6 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^$', views.index),
     url(r'^all_stations/', views.all_stations),
-    url(r'^nearby_station/', views.nearby),
     url(r'^json_all_stations/', views.json_all_stations),
 
 ]
