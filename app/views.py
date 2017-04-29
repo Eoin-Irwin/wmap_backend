@@ -27,7 +27,9 @@ def json_all_stations(request):
         res = re.findall(regex, coords)
         blong, blat = res[0].split(' ')
         dist = distance_checker(lat, long, blat, blong)
-        i['distance'] = float(dist) / 1000
+        dist = float(dist) / 1000
+        dist = round(dist, 2)
+        i['distance'] = dist
     return JsonResponse(results)
 
 
