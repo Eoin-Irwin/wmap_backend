@@ -1,6 +1,4 @@
 import json, re
-from pprint import pprint
-
 import requests
 from django.core import serializers
 from django.http import JsonResponse
@@ -51,7 +49,7 @@ def all_stations(request):
 
 
 def find_nearset_station(request):
-    address = request.GET['address']
+    address = request.GET.get('address')
     google_url = "https://maps.googleapis.com/maps/api/geocode/json?address={0}".format(address)
     google_reply = requests.get(google_url)
     location_data = json.loads(google_reply.text)
@@ -76,4 +74,4 @@ def find_nearset_station(request):
         dist = float(dist) / 1000
         dist = round(dist, 2)
         i['distance'] = dist
-    return JsonResponse(results)
+    return TemplateResponse(request, 'app/find_nearset_station.html', results)
