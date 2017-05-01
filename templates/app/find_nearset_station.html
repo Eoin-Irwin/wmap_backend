@@ -25,7 +25,7 @@
     <link rel="stylesheet" href="/static/css/materialize.css"/>
     <link rel="stylesheet" href="/static/css/style.css"/>
 </head>
-<body onload="pos()">
+<body>
 <nav class="light-blue lighten-1" role="navigation">
     <div class="nav-wrapper container"><a id="logo-container" href="/" class="brand-logo">Dublin bike finder</a>
         <ul class="right hide-on-med-and-down">
@@ -40,10 +40,10 @@
 </nav>
 <div class="section no-pad-bot" id="index-banner">
     <div class="container">
-        <form action="" id="address">
+        <form action="" id="addressform">
             Address:<br>
             <input type="text" name="address" id="address">
-            <input type="submit" value="Submit">
+            <input type="button" onclick="pos()" class="btn btn-primary" value="Search">
         </form>
         <br><br>
         <div id="map-box">
@@ -55,11 +55,14 @@
         </table>
         <script>
             //Accessible map
+            //
             let been_routed = false;
             let routing = '';
             let map = '';
             let users_lat_coords, users_lng_coords, x, y = '';
 
+            //Find users position
+            //
             function pos() {
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(showPosition);
@@ -67,6 +70,7 @@
                     alert("Geolocation is not supported by this browser.");
                 }
             }
+
             function showPosition(position) {
                 //Set the map view to be the users location
                 //
@@ -85,15 +89,37 @@
                 //Loop through all of the Dublin bike data and assign them onClick of a marker
                 //
                 let dataSet = [];
+                let address_value = document.getElementById("address").value;
+
                 $.ajax({
                     method: 'GET',
-                    url: "/json_all_stations/",
-                    data: {'lat': position.coords.latitude, 'long': position.coords.longitude},
+                    url: "/json_nearest_station/",
+                    data: {address: address_value},
                     success: function (bike_data) {
-
+                        var distance = 100.1;
+                        var st = '';
+                        var llat = '';
+                        var llng = '';
                         for (let i in bike_data['0']) {
                             let row = [];
                             a = bike_data;
+
+                            //place distance in var
+                            //if distance <= what the a[i].distance
+                            //place a[i] in var - for first pass regardless this will be through as their is no other distance
+                            //when for loop is done. then call route
+                            //define vars outside of for loop
+
+                            if (distance >= a['0'][i]['distance']) {
+                                distance = a['0'][i]['distance'];
+                                st = a['0'][i];
+                                llat = a['lat'];
+                                llng = a['lng'];
+                            }
+
+
+                            //Getting coordinates of bike
+                            //
                             coords = a['0'][i]['fields']['position'];
                             let regExp = /\(([^)]+)\)/;
                             let matches = regExp.exec(coords);
@@ -103,28 +129,53 @@
                             lng = splitting[0];
                             lat = splitting[1];
 
+                            //Push these values to the bike array table
+                            //
                             row.push(a['0'][i]['pk']);
                             row.push(a['0'][i]['fields']['stand_name']);
                             row.push(a['0'][i]['distance']);
                             row.push(a['0'][i]['fields']['available_bikes']);
 
+                            //Add the arrays of data to the dataset which contains 101 rows
+                            //
                             dataSet.push(row);
 
+                            //Add 101 markers to the map and on click of a popup display information
+                            //
                             L.marker([lat, lng]).addTo(map).bindPopup("<hr><b>Number: </b>" + a['0'][i]['pk'] + "<br><b>Name: </b>" + a['0'][i]['fields']['stand_name'] +
                                 "<hr><b>Free bikes: </b> " + a['0'][i]['fields']['available_bikes'] + "<br><b>Total stands: </b>" + a['0'][i]['fields']['total_bike_stands'] +
                                 "<hr><b>Free stands: </b> " + a['0'][i]['fields']['available_bike_stands'] + "<hr><b>Updated: </b>" + a['0'][i]['fields']['last_update'] +
                                 "<hr><b>Position: </b>" + lat + "," + lng +
                                 "<hr><b>Distance: </b>" + a['0'][i]['distance'] + "<hr>"
-                                + "<br><button class='btn btn-primary' onclick=\"route_to_station(" + position.coords.latitude + "," + position.coords.longitude + "," + lat + "," + lng + ")\">Route to here</button>");
+                                + "<br><button class='btn btn-primary' onclick=\"route_to_station(" + a['lat'] + "," + a['lng'] + "," + lat + "," + lng + ")\">Route to here</button>");
                         }
 
+                        //Add marker to the map based off users search
+                        //
+                        L.marker([a['lat'], a['lng']], {
+                            icon: L.AwesomeMarkers.icon({
+                                prefix: 'fa',
+                                markerColor: 'orange'
+                            })
+                        }).addTo(map);
+
+                        //When routing connect users way point to the bikes waypoint, dont allow extra waypoints
+                        //
                         if (x !== '') {
                             L.Routing.control({
+                                    draggableWaypoints: false,
+                                    createMarker: function () {
+                                        return null;
+                                    },
                                     waypoints: [L.latLng(users_lat_coords, users_lng_coords), L.latLng(x, y)],
                                     lineOptions: {addWaypoints: false}
+
                                 }
                             ).addTo(map);
                         }
+
+                        //Use the dataset from above and populate the table
+                        //
                         $('#example').DataTable({
                             data: dataSet,
                             columns: [
@@ -135,14 +186,25 @@
 
                             ]
                         });
+
+                        var coordsto = st['fields']['position'];
+                        let regExp = /\(([^)]+)\)/;
+                        let matches1 = regExp.exec(coordsto);
+
+                        //matches[1] contains the value between the parentheses
+                        splitting1 = matches1[1].split(" ");
+                        blng = splitting1[0];
+                        blat = splitting1[1];
+
+                        route_to_station(llat, llng, blat, blng);
                     }
 
                 });
 
-
                 //Change cursor to a move instead of hand grab
                 //
                 $('.leaflet-container').css('cursor', 'move');
+
             }
 
             function route_to_station(users_lat_coords1, users_lng_coords1, x1, y1) {
@@ -151,16 +213,31 @@
                 x = x1;
                 y = y1;
 
+                //If a route has been established then splice the one waypoint
+                //
                 if (x !== '') {
                     if (been_routed === true) {
                         routing.spliceWaypoints(0, 1);
                     }
+
+                    //Route to station
+                    //
                     routing = L.Routing.control({
+                        draggableWaypoints: false,
+                        createMarker: function () {
+                            return null;
+                        },
                         waypoints: [L.latLng(users_lat_coords, users_lng_coords), L.latLng(x, y)],
                         lineOptions: {addWaypoints: false}
                     });
+
+                    //Add routing and assign true to know routing has been assigned + waypoint
+                    //
                     routing.addTo(map);
                     been_routed = true;
+
+                    // Issue with re routing was creating multiple routes
+                    //
                     let listofroutes = document.getElementsByClassName('leaflet-routing-container leaflet-bar leaflet-control');
                     if (listofroutes.length > 1) {
                         listofroutes[0].remove();
