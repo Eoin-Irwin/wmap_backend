@@ -49,7 +49,8 @@ def find_nearest_station(request):
 def json_nearest_station(request):
     # Request address from form input
     address = request.GET.get('address')
-    google_url = "https://maps.googleapis.com/maps/api/geocode/json?address={0}".format(address)
+    address = address + " dublin ireland"
+    google_url = "https://maps.googleapis.com/maps/api/geocode/json?mode=walking&address={0}".format(address)
     # Google api requires underscores so replaces space default + symbol
     google_url = google_url.replace("+", "_")
     google_reply = requests.get(google_url)
