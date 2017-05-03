@@ -37,12 +37,24 @@ def json_all_stations(request):
 def index(request):
     return TemplateResponse(request, 'app/index.html')
 
-
+#Uncomment code and run before demo
 def all_stations(request):
+    # json_data = json_data_import()
+    # for i in json_data:
+    #     DublinBikes.objects.filter(stand_number=i['number']).update(
+    #         available_bike_stands=i['available_bike_stands'], available_bikes=i['available_bikes'],
+    #         last_update=i['last_update'])
+    # all_data = SELECT_ALL_DATA_VALUES
     return TemplateResponse(request, 'app/all_bike_stations.html')
 
 
 def find_nearest_station(request):
+    # json_data = json_data_import()
+    # for i in json_data:
+    #     DublinBikes.objects.filter(stand_number=i['number']).update(
+    #         available_bike_stands=i['available_bike_stands'], available_bikes=i['available_bikes'],
+    #         last_update=i['last_update'])
+    # all_data = SELECT_ALL_DATA_VALUES
     return TemplateResponse(request, 'app/find_nearset_station.html')
 
 
@@ -63,6 +75,7 @@ def json_nearest_station(request):
     json_data = json_data_import()
     for i in json_data:
         DublinBikes.objects.all()
+
     all_data = SELECT_ALL_DATA_VALUES
     results = {}
     # for every queryset in the list serialize it.

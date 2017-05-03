@@ -5,6 +5,7 @@ from app.models import DublinBikes
 from .dublin_bikes_api import json_data_import
 
 
+# Data being inserted to the database
 def run():
     json_data = json_data_import()
     for i in json_data:

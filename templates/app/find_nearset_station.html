@@ -100,16 +100,18 @@
                         var st = '';
                         var llat = '';
                         var llng = '';
+
+                        //Loop through all data
+                        //
                         for (let i in bike_data['0']) {
                             let row = [];
                             a = bike_data;
 
                             //place distance in var
                             //if distance <= what the a[i].distance
-                            //place a[i] in var - for first pass regardless this will be through as their is no other distance
+                            //place a[i] in var - for first pass regardless this will be TRUE as their is no other distances YET
+                            //The above was countered by setting the distance var as 100km
                             //when for loop is done. then call route
-                            //define vars outside of for loop
-
                             if (distance >= a['0'][i]['distance']) {
                                 distance = a['0'][i]['distance'];
                                 st = a['0'][i];
@@ -187,6 +189,8 @@
                             ]
                         });
 
+                        //Find the coordinates to the station
+                        //
                         var coordsto = st['fields']['position'];
                         let regExp = /\(([^)]+)\)/;
                         let matches1 = regExp.exec(coordsto);
@@ -196,6 +200,8 @@
                         blng = splitting1[0];
                         blat = splitting1[1];
 
+                        //Route to station then based on the user search
+                        //
                         route_to_station(llat, llng, blat, blng);
                     }
 

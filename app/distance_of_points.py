@@ -2,6 +2,7 @@ import pyproj as proj
 from shapely import geometry
 
 
+# Distance checker to see from users location to bike location what in m/km
 def distance_checker(lat, long, check_lat, check_long, shapely=None):
     crs_wgs = proj.Proj(init='epsg:4326')
     crs_bng = proj.Proj(init='epsg:27700')

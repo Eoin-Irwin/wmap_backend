@@ -54,6 +54,8 @@
             let map = '';
             let users_lat_coords, users_lng_coords, x, y = '';
 
+            //Function to retrieve the users location
+            //
             function pos() {
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(showPosition);
@@ -61,6 +63,7 @@
                     alert("Geolocation is not supported by this browser.");
                 }
             }
+
             function showPosition(position) {
                 //Set the map view to be the users location
                 //
@@ -84,26 +87,39 @@
                     url: "/json_all_stations/",
                     data: {'lat': position.coords.latitude, 'long': position.coords.longitude},
                     success: function (bike_data) {
-
+                        //Loop through all data
+                        //
                         for (let i in bike_data['0']) {
                             let row = [];
                             a = bike_data;
+                            //Find coords of bike station
+                            //
                             coords = a['0'][i]['fields']['position'];
+
+                            //Regex for seperating lat and lng into a variable
+                            //
                             let regExp = /\(([^)]+)\)/;
                             let matches = regExp.exec(coords);
 
                             //matches[1] contains the value between the parentheses
+                            //
                             splitting = matches[1].split(" ");
                             lng = splitting[0];
                             lat = splitting[1];
 
+                            //Pushing data to a list for displaying later
+                            //
                             row.push(a['0'][i]['pk']);
                             row.push(a['0'][i]['fields']['stand_name']);
                             row.push(a['0'][i]['distance']);
                             row.push(a['0'][i]['fields']['available_bikes']);
 
+                            //Pushing all 101 bike data station details to the datatables view
+                            //
                             dataSet.push(row);
 
+                            //Set the marker for 101 stations to include all info, allow routing on click
+                            //
                             L.marker([lat, lng]).addTo(map).bindPopup("<hr><b>Number: </b>" + a['0'][i]['pk'] + "<br><b>Name: </b>" + a['0'][i]['fields']['stand_name'] +
                                 "<hr><b>Free bikes: </b> " + a['0'][i]['fields']['available_bikes'] + "<br><b>Total stands: </b>" + a['0'][i]['fields']['total_bike_stands'] +
                                 "<hr><b>Free stands: </b> " + a['0'][i]['fields']['available_bike_stands'] + "<hr><b>Updated: </b>" + a['0'][i]['fields']['last_update'] +
@@ -112,6 +128,8 @@
                                 + "<br><button class='btn btn-primary' onclick=\"route_to_station(" + position.coords.latitude + "," + position.coords.longitude + "," + lat + "," + lng + ")\">Route to here</button>");
                         }
 
+                        // If x has been routed, delete that waypoint and re route the user
+                        //
                         if (x !== '') {
                             L.Routing.control({
                                     draggableWaypoints: false,
@@ -124,6 +142,9 @@
                                 }
                             ).addTo(map);
                         }
+
+                        //Data table displaying to the user
+                        //
                         $('#example').DataTable({
                             data: dataSet,
                             columns: [
@@ -144,12 +165,16 @@
                 $('.leaflet-container').css('cursor', 'move');
             }
 
+            //The button on click function to re route
+            //
             function route_to_station(users_lat_coords1, users_lng_coords1, x1, y1) {
                 users_lat_coords = users_lat_coords1;
                 users_lng_coords = users_lng_coords1;
                 x = x1;
                 y = y1;
 
+                //Re route the station and remove the current marker so only one route appears
+                //
                 if (x !== '') {
                     if (been_routed === true) {
                         routing.spliceWaypoints(0, 1);
@@ -165,6 +190,9 @@
                     });
                     routing.addTo(map);
                     been_routed = true;
+
+                    // Issue with multiple route directions being created
+                    //
                     let listofroutes = document.getElementsByClassName('leaflet-routing-container leaflet-bar leaflet-control');
                     if (listofroutes.length > 1) {
                         listofroutes[0].remove();
